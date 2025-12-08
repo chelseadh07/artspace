@@ -1,0 +1,113 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Order;
+use App\Models\Service;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class OrderController extends Controller
+{
+    public function index(Request $r)
+    {
+        $q = $r->q;
+
+        $orders = Order::with(['client', 'artist', 'service'])
+            ->orderBy('created_at', 'desc');
+
+        if ($q) {
+            $orders->where('description_request', 'like', "%{$q}%");
+        }
+
+        $orders = $orders->paginate(12)->withQueryString();
+
+        return view('orders.index', compact('orders'));
+    }
+
+    public function create()
+    {
+        $services = Service::where('status', 'active')->get();
+        $artists  = User::where('role', 'artist')->get();
+
+        return view('orders.create', compact('services', 'artists'));
+    }
+
+    public function store(Request $r)
+    {
+        $r->validate([
+            'service_id'          => 'required|exists:services,service_id',
+            'artist_id'           => 'required|exists:users,user_id',
+            'description_request' => 'nullable|string',
+            'price'               => 'nullable|numeric|min:0',
+        ]);
+
+        $order = Order::create([
+            'client_id'           => Auth::id(),
+            'artist_id'           => $r->artist_id,
+            'service_id'          => $r->service_id,
+            'description_request' => $r->description_request,
+            'price'               => $r->price,
+            'status'              => 'pending',
+        ]);
+
+        return redirect()
+            ->route('orders.show', $order)
+            ->with('success', 'Order created. Hubungi artist via WhatsApp untuk pembayaran.');
+    }
+
+    public function show(Order $order)
+    {
+        return view('orders.show', compact('order'));
+    }
+
+    public function edit(Order $order)
+    {
+        if (Auth::user()->role !== 'admin' && Auth::id() !== $order->client_id) {
+            abort(403);
+        }
+
+        $services = Service::all();
+        $artists  = User::where('role', 'artist')->get();
+
+        return view('orders.edit', compact('order', 'services', 'artists'));
+    }
+
+    public function update(Request $r, Order $order)
+    {
+        if (Auth::user()->role !== 'admin' && Auth::id() !== $order->client_id) {
+            abort(403);
+        }
+
+        $r->validate([
+            'description_request' => 'nullable|string',
+            'price'               => 'nullable|numeric|min:0',
+            'status'              => 'required|in:pending,accepted,in_progress,finished,cancelled',
+        ]);
+
+        $order->update($r->only(['description_request', 'price', 'status']));
+
+        return redirect()->route('orders.index')->with('success', 'Order updated.');
+    }
+
+    public function destroy(Order $order)
+    {
+        if (Auth::user()->role !== 'admin' && Auth::id() !== $order->client_id) {
+            abort(403);
+        }
+
+        $order->delete();
+
+        return back()->with('success', 'Order deleted.');
+    }
+
+    // Optional: generate WhatsApp payment link
+    public function waLink(Order $order)
+    {
+        $phone = $order->artist->phone_number ?? '';
+        $text  = urlencode("Halo kak, saya ingin konfirmasi pembayaran untuk order ID {$order->order_id}");
+
+        return redirect()->away("https://wa.me/{$phone}?text={$text}");
+    }
+}
