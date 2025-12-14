@@ -1,40 +1,67 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>@yield('title','ArtSpace')</title>
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+    <style>
+        body {
+            background-color: #0e0e0e;
+            color: #e5e7eb;
+        }
 
-        <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    </head>
-    <body class="font-sans antialiased">
-        <div class="min-h-screen bg-gray-100">
-            @include('layouts.navigation')
+        .navbar {
+            background-color: #111827;
+            border-bottom: 1px solid #1f2933;
+        }
 
-            <!-- Page Heading -->
-            @isset($header)
-                <header class="bg-white shadow">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                        {{ $header }}
-                    </div>
-                </header>
-            @endisset
+        .sidebar {
+            background-color: #111827;
+            min-height: 100vh;
+            border-right: 1px solid #1f2933;
+        }
 
-            <!-- Page Content -->
-            <main>
-                @isset($slot)
-                    {{ $slot }}
-                @else
-                    @yield('content')
-                @endisset
-            </main>
-        </div>
-    </body>
+        .card {
+            background-color: #18181b;
+            border: 1px solid #27272a;
+        }
+
+        .text-muted {
+            color: #9ca3af !important;
+        }
+
+        .btn-primary {
+            background-color: #6366f1;
+            border: none;
+        }
+
+        .btn-outline-light {
+            border-color: #374151;
+            color: #e5e7eb;
+        }
+
+        .btn-outline-light:hover {
+            background-color: #1f2937;
+        }
+    </style>
+</head>
+<body>
+
+@include('partials.navbar')
+
+<div class="container-fluid">
+    <div class="row">
+        @auth
+            @include('partials.sidebar')
+        @endauth
+
+        <main class="col p-4">
+            @yield('content')
+        </main>
+    </div>
+</div>
+
+</body>
 </html>

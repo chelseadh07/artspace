@@ -3,51 +3,54 @@
 @section('title','Admin Dashboard')
 
 @section('content')
-<div class="container py-4">
-  <h2 class="mb-3 text-light">Admin Dashboard</h2>
+<div class="container-fluid">
 
-  <div class="row g-3">
-    <div class="col-md-3">
-      <div class="card p-3">
-        <div class="card-body">
-          <h6>Total Users</h6>
-          <h3>{{ $totalUsers }}</h3>
-        </div>
-      </div>
+    <div class="mb-4">
+        <h2 class="fw-bold">Admin Dashboard</h2>
+        <p class="text-muted">Overview sistem ArtSpace hari ini</p>
     </div>
 
-    <div class="col-md-3">
-      <div class="card p-3">
-        <div class="card-body">
-          <h6>Total Artists</h6>
-          <h3>{{ $totalArtists }}</h3>
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card p-3">
+                <small class="text-muted">Total Users</small>
+                <h2 class="fw-bold">{{ $totalUsers }}</h2>
+            </div>
         </div>
-      </div>
+
+        <div class="col-md-3">
+            <div class="card p-3">
+                <small class="text-muted">Artists</small>
+                <h2 class="fw-bold">{{ $totalArtists }}</h2>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card p-3">
+                <small class="text-muted">Orders</small>
+                <h2 class="fw-bold">{{ $totalOrders }}</h2>
+                <span class="text-warning small">
+                    Pending: {{ $ordersPending }}
+                </span>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card p-3">
+                <small class="text-muted">Reports</small>
+                <h2 class="fw-bold">{{ $totalReports }}</h2>
+            </div>
+        </div>
     </div>
 
-    <div class="col-md-3">
-      <div class="card p-3">
-        <div class="card-body">
-          <h6>Total Orders</h6>
-          <h3>{{ $totalOrders }}</h3>
-          <small class="text-muted">Pending: {{ $ordersPending }}</small>
-        </div>
-      </div>
+    <div class="d-flex gap-2">
+        <a href="{{ route('admin.users.index') }}" class="btn btn-outline-light btn-sm">
+            Manage Users
+        </a>
+        <a href="{{ route('admin.orders.index') }}" class="btn btn-outline-light btn-sm">
+            Manage Orders
+        </a>
     </div>
 
-    <div class="col-md-3">
-      <div class="card p-3">
-        <div class="card-body">
-          <h6>Open Reports</h6>
-          <h3>{{ $totalReports }}</h3>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="mt-4">
-    <a href="{{ route('admin.users.index') }}" class="btn btn-sm btn-outline-light me-2">Manage Users</a>
-    <a href="{{ route('admin.orders.index') }}" class="btn btn-sm btn-outline-light">Manage Orders</a>
-  </div>
 </div>
 @endsection
