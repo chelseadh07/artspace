@@ -43,8 +43,7 @@ class PaymentController extends Controller
     {
         $r->validate([
             'order_id'        => 'required|exists:orders,order_id',
-            'amount'          => 'nullable|numeric|min:0',
-            'payment_proof'   => 'nullable|image|max:8192',
+            'payment_proof'   => 'required|image|max:8192',
         ]);
 
         $order = Order::findOrFail($r->order_id);
@@ -60,8 +59,8 @@ class PaymentController extends Controller
 
         Payment::create([
             'order_id'       => $order->order_id,
-            'amount'         => $r->amount,
-            'method'         => $r->method ?? 'manual_whatsapp',
+            'amount'         => $order->price,
+            'method'         => 'manual_whatsapp',
             'payment_status' => 'waiting_confirmation',
             'payment_proof'  => $proof,
             'payment_date'   => null

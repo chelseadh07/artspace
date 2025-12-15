@@ -22,6 +22,7 @@ class User extends Authenticatable
         'role',
         'bio',
         'avatar',
+        'whatsapp_link',
         'phone_number'
     ];
 
@@ -62,5 +63,15 @@ class User extends Authenticatable
     public function notifications()
     {
         return $this->hasMany(Notification::class, 'user_id');
+    }
+
+    public function invoicesAsArtist()
+    {
+        return $this->hasMany(Invoice::class, 'artist_id');
+    }
+
+    public function invoicesAsClient()
+    {
+        return $this->hasMany(Invoice::class, 'client_id');
     }
 }

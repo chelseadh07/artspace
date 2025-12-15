@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\{
     UserController, CategoryController, ArtworkController, ServiceController,
     OrderController, PaymentController, OrderChatController, ReviewController,
-    ReportController, NotificationController
+    ReportController, NotificationController, ArtistController, InvoiceController
 };
 
 use App\Http\Controllers\Admin\AdminController;
@@ -16,6 +16,9 @@ use App\Http\Middleware\AdminOnly;
 Route::get('/', function () {
     return view('welcome');
 })->name('landing');
+
+// Artist Profile (Public)
+Route::get('/artist/{artist}', [ArtistController::class, 'show'])->name('artists.show');
 
 
 // ===================== AUTH ROUTES (CUSTOM BY ROLE) =====================
@@ -91,6 +94,12 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('notifications', NotificationController::class)->only(['index', 'destroy']);
     Route::post('notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
+
+    // Invoices
+    Route::resource('invoices', InvoiceController::class)->only(['index', 'show']);
+    Route::get('orders/{order}/invoices/create', [InvoiceController::class, 'create'])->name('invoices.create');
+    Route::post('orders/{order}/invoices', [InvoiceController::class, 'store'])->name('invoices.store');
+    Route::post('invoices/{invoice}/status', [InvoiceController::class, 'updateStatus'])->name('invoices.updateStatus');
 
     // Profile (used by layout links)
     Route::get('profile', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');

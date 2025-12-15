@@ -26,12 +26,17 @@ class OrderController extends Controller
         return view('orders.index', compact('orders'));
     }
 
-    public function create()
+    public function create(Service $service = null)
     {
+        // Jika ada service spesifik yang di-klik (checkout flow)
+        if ($service && $service->status !== 'active') {
+            abort(404);
+        }
+
         $services = Service::where('status', 'active')->get();
         $artists  = User::where('role', 'artist')->get();
 
-        return view('orders.create', compact('services', 'artists'));
+        return view('orders.create', compact('services', 'artists', 'service'));
     }
 
     public function store(Request $r)
@@ -40,21 +45,22 @@ class OrderController extends Controller
             'service_id'          => 'required|exists:services,service_id',
             'artist_id'           => 'required|exists:users,user_id',
             'description_request' => 'nullable|string',
-            'price'               => 'nullable|numeric|min:0',
         ]);
+
+        $service = Service::findOrFail($r->service_id);
 
         $order = Order::create([
             'client_id'           => Auth::id(),
             'artist_id'           => $r->artist_id,
             'service_id'          => $r->service_id,
             'description_request' => $r->description_request,
-            'price'               => $r->price,
+            'price'               => $service->base_price, // gunakan harga dari service
             'status'              => 'pending',
         ]);
 
         return redirect()
             ->route('orders.show', $order)
-            ->with('success', 'Order created. Hubungi artist via WhatsApp untuk pembayaran.');
+            ->with('success', 'Order created. Lanjutkan ke checkout untuk pembayaran.');
     }
 
     public function show(Order $order)

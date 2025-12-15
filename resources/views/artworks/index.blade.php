@@ -3,35 +3,112 @@
 @section('title','Artworks')
 
 @section('content')
-<div class="container py-4">
-    <div class="d-flex justify-content-between mb-3">
-        <h2>Artworks</h2>
-        <a href="{{ route('artworks.create') }}" class="btn btn-primary">Upload Artwork</a>
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="mb-4 d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="fw-bold mb-1">
+                <i class="fas fa-palette"></i> Artworks
+            </h1>
+            <p class="text-muted mb-0">Discover beautiful artwork from talented artists</p>
+        </div>
+        @if(auth()->check() && auth()->user()->role === 'artist')
+            <a href="{{ route('artworks.create') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Upload Artwork
+            </a>
+        @endif
     </div>
 
-    <div class="row g-3">
-        @foreach($arts as $art)
-        <div class="col-md-3">
-            <div class="card">
-                @if($art->image_url)
-                <img src="{{ asset('storage/'.$art->image_url) }}" class="card-img-top" style="height:180px;object-fit:cover">
-                @endif
-                <div class="card-body">
-                    <h5 class="card-title">{{ $art->title }}</h5>
-                    <p class="card-text">{{ Str::limit($art->description, 80) }}</p>
-                    <a href="{{ route('artworks.show', $art) }}" class="btn btn-sm btn-outline-secondary">View</a>
-                    @if(auth()->check() && (auth()->user()->role==='admin' || auth()->id()===$art->user_id))
-                        <a href="{{ route('artworks.edit', $art) }}" class="btn btn-sm btn-outline-primary">Edit</a>
-                        <form action="{{ route('artworks.destroy', $art) }}" method="POST" style="display:inline">@csrf @method('DELETE')
-                            <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete artwork?')">Delete</button>
-                        </form>
-                    @endif
+    <!-- Artworks Grid -->
+    <div class="row g-4">
+        @forelse($arts as $art)
+            <div class="col-md-3 col-sm-6">
+                <div class="card card-hover h-100">
+                    <!-- Artwork Image -->
+                    <div style="position: relative; overflow: hidden; height: 220px;">
+                        @if($art->image_url)
+                            <img src="{{ asset('storage/'.$art->image_url) }}"
+                                 class="w-100 h-100"
+                                 style="object-fit: cover; transition: transform 0.3s ease;">
+                        @else
+                            <div class="bg-dark d-flex align-items-center justify-content-center w-100 h-100">
+                                <div class="text-center">
+                                    <i class="fas fa-image fa-3x text-muted mb-2"></i>
+                                    <p class="text-muted">No Image</p>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+
+                    <div class="card-body d-flex flex-column">
+                        <!-- Title -->
+                        <h5 class="card-title mb-2">{{ $art->title }}</h5>
+
+                        <!-- Category & Artist -->
+                        <div class="d-flex gap-2 mb-2 flex-wrap">
+                            @if($art->category)
+                                <span class="badge bg-success">{{ $art->category->name }}</span>
+                            @endif
+                            @if($art->user)
+                                <span class="badge bg-secondary">
+                                    <i class="fas fa-user"></i> {{ $art->user->name }}
+                                </span>
+                            @endif
+                        </div>
+
+                        <!-- Description -->
+                        <p class="text-muted small flex-grow-1">
+                            {{ Str::limit($art->description, 80) }}
+                        </p>
+
+                        <!-- Actions -->
+                        <div class="d-flex gap-2 pt-3 border-top border-dark flex-wrap">
+                            <a href="{{ route('artworks.show', $art) }}" 
+                               class="btn btn-primary btn-sm flex-grow-1">
+                                <i class="fas fa-eye"></i> View
+                            </a>
+                            @if(auth()->check() && (auth()->user()->role==='admin' || auth()->id()===$art->user_id))
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{{ route('artworks.edit', $art) }}" 
+                                       class="btn btn-outline-secondary" 
+                                       title="Edit artwork">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form action="{{ route('artworks.destroy', $art) }}" 
+                                          method="POST" 
+                                          style="display:inline"
+                                          onclick="return confirm('Delete this artwork?')">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" 
+                                                class="btn btn-outline-danger"
+                                                title="Delete artwork">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-        @endforeach
+        @empty
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <p class="text-muted mb-0">No artworks found</p>
+                    </div>
+                </div>
+            </div>
+        @endforelse
     </div>
 
-    {{ $arts->links() }}
+    <!-- Pagination -->
+    @if($arts->hasPages())
+        <div class="mt-4 d-flex justify-content-center">
+            {{ $arts->links() }}
+        </div>
+    @endif
+
 </div>
 @endsection
