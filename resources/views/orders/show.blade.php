@@ -15,11 +15,29 @@
                     <i class="fas fa-calendar"></i> {{ $order->created_at->format('d M Y H:i') }}
                 </small>
             </div>
-            @if (auth()->id() === $order->client_id || auth()->user()->role === 'admin')
+            @if (auth()->id() === $order->client_id)
                 <div class="d-flex gap-2">
                     <a href="{{ route('orders.edit', $order) }}" class="btn btn-outline-secondary">
                         <i class="fas fa-edit"></i> Edit
                     </a>
+                    <form action="{{ route('orders.destroy', $order) }}" method="POST" style="display:inline">
+                        @csrf @method('DELETE')
+                        <button class="btn btn-outline-danger" onclick="return confirm('Delete order?')">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </form>
+                </div>
+            @elseif(auth()->user()->role === 'artist' && auth()->id() === $order->artist_id)
+                <div class="d-flex gap-2">
+                    <form action="{{ route('orders.destroy', $order) }}" method="POST" style="display:inline">
+                        @csrf @method('DELETE')
+                        <button class="btn btn-outline-danger" onclick="return confirm('Delete order?')">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </form>
+                </div>
+            @elseif(auth()->user()->role === 'admin')
+                <div class="d-flex gap-2">
                     <form action="{{ route('orders.destroy', $order) }}" method="POST" style="display:inline">
                         @csrf @method('DELETE')
                         <button class="btn btn-outline-danger" onclick="return confirm('Delete order?')">
@@ -121,7 +139,7 @@
                             <hr class="border-dark my-4">
                             <div>
                                 <p class="text-muted small mb-2">Update Status</p>
-                                <form action="{{ route('orders.artistUpdateStatus', $order) }}" method="POST">
+                                <form action="{{ route('orders.updateStatus', $order) }}" method="POST">
                                     @csrf
                                     @method('PATCH')
                                     <select name="status" class="form-select form-select-sm">

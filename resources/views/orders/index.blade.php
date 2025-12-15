@@ -12,9 +12,11 @@
             </h1>
             <p class="text-muted mb-0">Track and manage your orders</p>
         </div>
-        <a href="{{ route('orders.create') }}" class="btn btn-primary">
-            <i class="fas fa-plus"></i> New Order
-        </a>
+        @if(auth()->user()->role === 'client')
+            <a href="{{ route('orders.create') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> New Order
+            </a>
+        @endif
     </div>
 
     <!-- Orders Table -->
@@ -54,16 +56,24 @@
                             <span class="badge bg-warning text-dark">
                                 <i class="fas fa-clock"></i> Pending
                             </span>
-                        @elseif($o->status === 'completed')
+                        @elseif($o->status === 'accepted')
+                            <span class="badge bg-info">
+                                <i class="fas fa-check"></i> Accepted
+                            </span>
+                        @elseif($o->status === 'in_progress')
+                            <span class="badge bg-primary">
+                                <i class="fas fa-spinner"></i> In Progress
+                            </span>
+                        @elseif($o->status === 'finished')
                             <span class="badge bg-success">
-                                <i class="fas fa-check"></i> Completed
+                                <i class="fas fa-check"></i> Finished
                             </span>
                         @elseif($o->status === 'cancelled')
                             <span class="badge bg-danger">
                                 <i class="fas fa-times"></i> Cancelled
                             </span>
                         @else
-                            <span class="badge bg-secondary">{{ $o->status }}</span>
+                            <span class="badge bg-secondary">{{ ucfirst(str_replace('_', ' ', $o->status)) }}</span>
                         @endif
                     </td>
                     <td>
@@ -73,22 +83,26 @@
                                title="View order">
                                 <i class="fas fa-eye"></i>
                             </a>
-                            <a href="{{ route('orders.edit', $o) }}" 
-                               class="btn btn-outline-secondary" 
-                               title="Edit order">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <form action="{{ route('orders.destroy', $o) }}" 
-                                  method="POST" 
-                                  style="display:inline"
-                                  onclick="return confirm('Delete this order?')">
-                                @csrf @method('DELETE')
-                                <button type="submit" 
-                                        class="btn btn-outline-danger"
-                                        title="Delete order">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
+                            @if(auth()->user()->role === 'client' && auth()->id() === $o->client_id)
+                                <a href="{{ route('orders.edit', $o) }}" 
+                                   class="btn btn-outline-secondary" 
+                                   title="Edit order">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            @endif
+                            @if((auth()->user()->role === 'client' && auth()->id() === $o->client_id) || (auth()->user()->role === 'artist' && auth()->id() === $o->artist_id) || auth()->user()->role === 'admin')
+                                <form action="{{ route('orders.destroy', $o) }}" 
+                                      method="POST" 
+                                      style="display:inline"
+                                      onclick="return confirm('Delete this order?')">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" 
+                                            class="btn btn-outline-danger"
+                                            title="Delete order">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            @endif
                         </div>
                     </td>
                 </tr>

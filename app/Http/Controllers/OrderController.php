@@ -116,13 +116,13 @@ class OrderController extends Controller
 
     public function destroy(Order $order)
     {
-        if (Auth::user()->role !== 'admin' && Auth::id() !== $order->client_id) {
+        if (Auth::user()->role !== 'admin' && Auth::id() !== $order->client_id && Auth::id() !== $order->artist_id) {
             abort(403);
         }
 
         $order->delete();
 
-        return back()->with('success', 'Order deleted.');
+        return redirect()->route('orders.index')->with('success', 'Order deleted successfully!');
     }
 
     // Optional: generate WhatsApp payment link
@@ -135,23 +135,23 @@ class OrderController extends Controller
     }
 
     public function updateStatus(Request $r, Order $order)
-{
-    if (
-        !(Auth::user()->role === 'artist' && Auth::id() === $order->artist_id) &&
-        Auth::user()->role !== 'admin'
-    ) {
-        abort(403);
+    {
+        if (
+            !(Auth::user()->role === 'artist' && Auth::id() === $order->artist_id) &&
+            Auth::user()->role !== 'admin'
+        ) {
+            abort(403);
+        }
+
+        $r->validate([
+            'status' => 'required|in:pending,accepted,in_progress,finished,cancelled',
+        ]);
+
+        $order->update([
+            'status' => $r->status
+        ]);
+
+        return redirect()->route('orders.show', $order)->with('success', 'Order status updated successfully!');
     }
-
-    $r->validate([
-        'status' => 'required|in:pending,accepted,in_progress,finished,cancelled',
-    ]);
-
-    $order->update([
-        'status' => $r->status
-    ]);
-
-    return back()->with('success', 'Order status updated.');
-}
 
 }
