@@ -23,7 +23,7 @@ class Service extends Model
 
     public function artist()
     {
-        return $this->belongsTo(User::class, 'user_id', 'id');
+        return $this->belongsTo(User::class, 'user_id', 'user_id');
     }
 
     public function orders()

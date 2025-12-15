@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <title>@yield('title','ArtSpace')</title>
+    <title>@yield('title', 'ArtSpace')</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
@@ -45,23 +46,48 @@
         .btn-outline-light:hover {
             background-color: #1f2937;
         }
+
+        .card-hover:hover {
+            border-color: #6366f1;
+            transform: translateY(-2px);
+            transition: .2s;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .icon-box {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(99, 102, 241, .15);
+            color: #6366f1;
+            font-size: 1.25rem;
+        }
     </style>
 </head>
+
 <body>
 
-@include('partials.navbar')
+    @include('partials.navbar')
 
-<div class="container-fluid">
-    <div class="row">
-        @auth
-            @include('partials.sidebar')
-        @endauth
+    <div class="container-fluid">
+        <div class="row">
+            @auth
+                @include('partials.sidebar')
+            @endauth
 
-        <main class="col p-4">
-            @yield('content')
-        </main>
+            <main class="col p-4">
+                @yield('content')
+            </main>
+        </div>
     </div>
-</div>
 
 </body>
+
 </html>
