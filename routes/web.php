@@ -2,9 +2,18 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\{
-    UserController, CategoryController, ArtworkController, ServiceController,
-    OrderController, PaymentController, OrderChatController, ReviewController,
-    ReportController, NotificationController, ArtistController, InvoiceController
+    UserController,
+    CategoryController,
+    ArtworkController,
+    ServiceController,
+    OrderController,
+    PaymentController,
+    OrderChatController,
+    ReviewController,
+    ReportController,
+    NotificationController,
+    ArtistController,
+    InvoiceController
 };
 
 use App\Http\Controllers\Admin\AdminController;
@@ -16,9 +25,6 @@ use App\Http\Middleware\AdminOnly;
 Route::get('/', function () {
     return view('welcome');
 })->name('landing');
-
-// Artist Profile (Public)
-Route::get('/artist/{artist}', [ArtistController::class, 'show'])->name('artists.show');
 
 
 // ===================== AUTH ROUTES (CUSTOM BY ROLE) =====================
@@ -58,6 +64,18 @@ Route::middleware(['auth', 'artist'])
         })->name('dashboard');
     });
 
+// routes/web.php
+Route::middleware(['auth', 'artist'])->group(function () {
+    Route::patch('orders/{order}/artist-status', [OrderController::class, 'artistUpdateStatus'])
+    ->middleware('auth') // optional, karena semua routes resource sudah pakai auth
+    ->name('orders.artistUpdateStatus');
+});
+
+
+// ===================== PUBLIC ARTIST PROFILE =====================
+Route::get('/artist/{artist}', [ArtistController::class, 'show'])
+    ->name('artists.show');
+
 
 // ===================== ADMIN ROUTES =====================
 Route::middleware(['auth', AdminOnly::class])
@@ -82,6 +100,9 @@ Route::middleware('auth')->group(function () {
     Route::resource('services', ServiceController::class);
     Route::resource('orders', OrderController::class);
 
+    // Artist-specific: update order status
+    Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
+
     Route::get('orders/{order}/wa', [OrderController::class, 'waLink'])->name('orders.wa');
 
     Route::resource('payments', PaymentController::class)->except(['edit', 'update']);
@@ -91,6 +112,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('reviews', ReviewController::class)->only(['index', 'create', 'store', 'destroy']);
     Route::resource('reports', ReportController::class)->except(['edit', 'show']);
     Route::post('reports/{report}/status', [ReportController::class, 'updateStatus'])->name('reports.updateStatus');
+
 
     Route::resource('notifications', NotificationController::class)->only(['index', 'destroy']);
     Route::post('notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
@@ -112,4 +134,3 @@ Route::middleware('auth')->group(function () {
 
 
 // ===================== LARAVEL DEFAULT AUTH ROUTES =====================
-
