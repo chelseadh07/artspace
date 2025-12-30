@@ -21,6 +21,12 @@ use App\Http\Controllers\AuthController;
 use App\Http\Middleware\AdminOnly;
 
 
+// ===================== DEBUG ROUTES =====================
+Route::get('/debug/user-info', [\App\Http\Controllers\DebugController::class, 'userInfo'])->name('debug.user-info');
+Route::get('/debug/all-users', [\App\Http\Controllers\DebugController::class, 'allUsers'])->name('debug.all-users');
+Route::get('/debug/test', [\App\Http\Controllers\DebugController::class, 'test'])->name('debug.test');
+
+
 // ===================== GUEST / PUBLIC ROUTES =====================
 Route::get('/', function () {
     return view('welcome');
@@ -75,6 +81,10 @@ Route::middleware(['auth', 'artist'])->group(function () {
 // ===================== PUBLIC ARTIST PROFILE =====================
 Route::get('/artist/{artist}', [ArtistController::class, 'show'])
     ->name('artists.show');
+
+
+// Artist Profile (Public) - HARUS SETELAH protected artist routes untuk avoid route conflict
+Route::get('/artist/{artist}', [ArtistController::class, 'show'])->name('artists.show');
 
 
 // ===================== ADMIN ROUTES =====================

@@ -109,7 +109,7 @@
                             <br><small>Please contact them through the order chat.</small>
                         </div>
 
-                        <a href="{{ route('order-chat.index', $order) }}" class="btn btn-outline-primary btn-lg w-100 rounded-2">
+                        <a href="{{ route('order_chat.index', $order) }}" class="btn btn-outline-primary btn-lg w-100 rounded-2">
                             <i class="fas fa-comments me-2"></i> Contact via Chat
                         </a>
                     @endif

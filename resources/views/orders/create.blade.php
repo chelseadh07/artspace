@@ -66,19 +66,7 @@
                 @csrf
 
                 <input type="hidden" id="hidden_service_id" name="service_id" value="{{ $service?->service_id ?? '' }}">
-
-                <!-- Select Artist -->
-                <div class="mb-4">
-                    <label for="artist_id" class="form-label"><strong>Select Artist</strong></label>
-                    <select id="artist_id" name="artist_id" class="form-select form-select-lg" required>
-                        <option value="">— Choose artist —</option>
-                        @foreach($artists as $a)
-                            <option value="{{ $a->user_id }}" {{ $service && $service->artist_id === $a->user_id ? 'selected' : '' }}>
-                                {{ $a->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
+                <input type="hidden" id="artist_id" name="artist_id" value="{{ $service?->artist_id ?? '' }}">
 
                 <!-- Price Summary -->
                 <div class="card bg-light mb-4">
@@ -128,6 +116,7 @@ function updateServiceInfo(serviceId) {
     const hiddenInput = document.getElementById('hidden_service_id');
     const summaryPrice = document.getElementById('summary_price');
     const summaryTotal = document.getElementById('summary_total');
+    const artistInput = document.getElementById('artist_id');
 
     if (serviceId) {
         document.getElementById('info_title').textContent = option.dataset.title;
@@ -160,17 +149,10 @@ document.addEventListener('DOMContentLoaded', function() {
 // Form validation
 document.getElementById('checkout_form').addEventListener('submit', function(e) {
     const serviceId = document.getElementById('hidden_service_id').value;
-    const artistId = document.getElementById('artist_id').value;
 
     if (!serviceId) {
         e.preventDefault();
         alert('Please select a service');
-        return false;
-    }
-
-    if (!artistId) {
-        e.preventDefault();
-        alert('Please select an artist');
         return false;
     }
 });

@@ -60,18 +60,20 @@ class OrderController extends Controller
 
         $r->validate([
             'service_id'          => 'required|exists:services,service_id',
-            'artist_id'           => 'required|exists:users,user_id',
             'description_request' => 'nullable|string',
         ]);
 
         $service = Service::findOrFail($r->service_id);
 
+        // Artist ID otomatis dari service (service.user_id = artist)
+        $artistId = $service->user_id;
+
         $order = Order::create([
             'client_id'           => Auth::id(),
-            'artist_id'           => $r->artist_id,
+            'artist_id'           => $artistId,
             'service_id'          => $r->service_id,
             'description_request' => $r->description_request,
-            'price'               => $service->base_price, // gunakan harga dari service
+            'price'               => $service->base_price,
             'status'              => 'pending',
         ]);
 
