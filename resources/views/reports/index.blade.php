@@ -9,7 +9,7 @@
         <a href="{{ route('reports.create') }}" class="btn btn-primary">New Report</a>
     </div>
 
-    <table class="table">
+    <table class="table table-dark table-hover">
         <thead>
             <tr>
                 <th>#</th>
@@ -30,12 +30,12 @@
                 <td>{{ $r->status }}</td>
                 <td>
                     <form action="{{ route('reports.updateStatus', $r) }}" method="POST" style="display:inline">@csrf
-                        <select name="status" class="form-select d-inline-block" style="width:150px">
+                        <select name="status" class="form-select form-select-sm d-inline-block bg-dark text-light border-secondary" style="width:150px">
                             <option value="open" {{ $r->status==='open' ? 'selected' : '' }}>open</option>
                             <option value="in_review" {{ $r->status==='in_review' ? 'selected' : '' }}>in_review</option>
                             <option value="resolved" {{ $r->status==='resolved' ? 'selected' : '' }}>resolved</option>
                         </select>
-                        <button class="btn btn-sm btn-outline-primary">Update</button>
+                        <button class="btn btn-sm btn-outline-light">Update</button>
                     </form>
                     <form action="{{ route('reports.destroy', $r) }}" method="POST" style="display:inline">@csrf @method('DELETE')
                         <button class="btn btn-sm btn-outline-danger">Delete</button>

@@ -9,7 +9,7 @@
         <a href="{{ route('users.create') }}" class="btn btn-primary">Create User</a>
     </div>
 
-    <table class="table table-striped">
+    <table class="table table-dark table-hover">
         <thead>
             <tr>
                 <th>#</th>

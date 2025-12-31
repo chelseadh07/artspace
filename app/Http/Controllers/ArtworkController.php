@@ -17,6 +17,12 @@ class ArtworkController extends Controller
         $arts = Artwork::with(['artist', 'category'])
             ->orderBy('created_at', 'desc');
 
+        // Filter: jika artist login dan ada parameter 'my' atau dari route tertentu, 
+        // tampilkan hanya artwork milik artist tersebut
+        if (Auth::check() && Auth::user()->role === 'artist' && $r->input('my') !== null) {
+            $arts->where('user_id', Auth::id());
+        }
+
         if ($q) {
             $arts->where(function ($x) use ($q) {
                 $x->where('title', 'like', "%{$q}%")

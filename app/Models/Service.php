@@ -35,4 +35,17 @@ class Service extends Model
     {
         return $this->belongsTo(Category::class, 'category_id', 'category_id');
     }
+
+    // Relasi many-to-many untuk multiple categories dengan harga
+    public function categories()
+    {
+        return $this->belongsToMany(Category::class, 'service_categories', 'service_id', 'category_id')
+                    ->withPivot('price')
+                    ->withTimestamps();
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class, 'service_id');
+    }
 }

@@ -6,9 +6,15 @@
 <div class="container-fluid py-4">
 
     <!-- Back Button -->
-    <a href="{{ route('artworks.index') }}" class="btn btn-outline-secondary mb-4">
-        <i class="fas fa-arrow-left"></i> Back to Artworks
-    </a>
+    @if(request('from_service'))
+        <a href="{{ route('services.show', request('from_service')) }}" class="btn btn-outline-secondary mb-4">
+            <i class="fas fa-arrow-left"></i> Back to Service
+        </a>
+    @else
+        <a href="{{ route('artworks.index') }}" class="btn btn-outline-secondary mb-4">
+            <i class="fas fa-arrow-left"></i> Back to Artworks
+        </a>
+    @endif
 
     <div class="row g-5">
 

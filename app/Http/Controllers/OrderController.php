@@ -19,9 +19,7 @@ class OrderController extends Controller
 
         if (Auth::user()->role === 'client') {
             $orders->where('client_id', Auth::id());
-        }
-
-        if (Auth::user()->role === 'artist') {
+        } elseif (Auth::user()->role === 'artist') {
             $orders->where('artist_id', Auth::id());
         }
 
@@ -34,22 +32,17 @@ class OrderController extends Controller
         return view('orders.index', compact('orders'));
     }
 
-
-    public function create(Service $service = null)
+    public function create(Service $service)
     {
         if (Auth::user()->role !== 'client') {
-            abort(403, 'Only buyers can place orders.');
+            abort(403);
         }
 
-        // Jika ada service spesifik yang di-klik (checkout flow)
-        if ($service && $service->status !== 'active') {
-            abort(404);
+        if ($service->status !== 'active') {
+            abort(404, 'Service not available.');
         }
 
-        $services = Service::where('status', 'active')->get();
-        $artists  = User::where('role', 'artist')->get();
-
-        return view('orders.create', compact('services', 'artists', 'service'));
+        return view('orders.create', compact('service'));
     }
 
     public function store(Request $r)
@@ -60,26 +53,35 @@ class OrderController extends Controller
 
         $r->validate([
             'service_id'          => 'required|exists:services,service_id',
+            'category_id'         => 'nullable|exists:categories,category_id',
             'description_request' => 'nullable|string',
         ]);
 
         $service = Service::findOrFail($r->service_id);
 
-        // Artist ID otomatis dari service (service.user_id = artist)
-        $artistId = $service->user_id;
+        $price = $service->base_price;
+        if ($r->category_id) {
+            $categoryPrice = $service->categories()
+                ->where('categories.category_id', $r->category_id)
+                ->first();
+
+            if ($categoryPrice) {
+                $price = $categoryPrice->pivot->price;
+            }
+        }
 
         $order = Order::create([
             'client_id'           => Auth::id(),
-            'artist_id'           => $artistId,
+            'artist_id'           => $service->user_id,
             'service_id'          => $r->service_id,
             'description_request' => $r->description_request,
-            'price'               => $service->base_price,
+            'price'               => $price,
             'status'              => 'pending',
         ]);
 
         return redirect()
             ->route('orders.show', $order)
-            ->with('success', 'Order created. Lanjutkan ke checkout untuk pembayaran.');
+            ->with('success', 'Order created. Lanjutkan ke checkout.');
     }
 
     public function show(Order $order)
@@ -89,7 +91,11 @@ class OrderController extends Controller
 
     public function edit(Order $order)
     {
-        if (Auth::user()->role !== 'admin' && Auth::id() !== $order->client_id) {
+        if (
+            Auth::user()->role !== 'admin' &&
+            Auth::id() !== $order->client_id &&
+            Auth::id() !== $order->artist_id
+        ) {
             abort(403);
         }
 
@@ -101,7 +107,11 @@ class OrderController extends Controller
 
     public function update(Request $r, Order $order)
     {
-        if (Auth::user()->role !== 'admin' && Auth::id() !== $order->client_id) {
+        if (
+            Auth::user()->role !== 'admin' &&
+            Auth::id() !== $order->client_id &&
+            Auth::id() !== $order->artist_id
+        ) {
             abort(403);
         }
 
@@ -118,22 +128,17 @@ class OrderController extends Controller
 
     public function destroy(Order $order)
     {
-        if (Auth::user()->role !== 'admin' && Auth::id() !== $order->client_id && Auth::id() !== $order->artist_id) {
+        if (
+            Auth::user()->role !== 'admin' &&
+            Auth::id() !== $order->client_id &&
+            Auth::id() !== $order->artist_id
+        ) {
             abort(403);
         }
 
         $order->delete();
 
-        return redirect()->route('orders.index')->with('success', 'Order deleted successfully!');
-    }
-
-    // Optional: generate WhatsApp payment link
-    public function waLink(Order $order)
-    {
-        $phone = $order->artist->phone_number ?? '';
-        $text  = urlencode("Halo kak, saya ingin konfirmasi pembayaran untuk order ID {$order->order_id}");
-
-        return redirect()->away("https://wa.me/{$phone}?text={$text}");
+        return redirect()->route('orders.index')->with('success', 'Order deleted.');
     }
 
     public function updateStatus(Request $r, Order $order)
@@ -149,11 +154,10 @@ class OrderController extends Controller
             'status' => 'required|in:pending,accepted,in_progress,finished,cancelled',
         ]);
 
-        $order->update([
-            'status' => $r->status
-        ]);
+        $order->update(['status' => $r->status]);
 
-        return redirect()->route('orders.show', $order)->with('success', 'Order status updated successfully!');
+        return redirect()
+            ->route('orders.show', $order)
+            ->with('success', 'Order status updated.');
     }
-
 }

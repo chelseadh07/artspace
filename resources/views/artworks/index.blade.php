@@ -64,7 +64,7 @@
                         <!-- Actions -->
                         <div class="d-flex gap-2 pt-3 border-top border-dark flex-wrap">
                             <a href="{{ route('artworks.show', $art) }}" 
-                               class="btn btn-primary btn-sm flex-grow-1">
+                               class="btn btn-primary btn-sm flex-grow-1 text-center">
                                 <i class="fas fa-eye"></i> View
                             </a>
                             @if(auth()->check() && (auth()->user()->role==='admin' || auth()->id()===$art->user_id))

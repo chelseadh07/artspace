@@ -41,23 +41,6 @@
                         @enderror
                     </div>
 
-                    <!-- Artist Selection -->
-                    <div class="mb-4">
-                        <label class="form-label fw-bold">Artist</label>
-                        <select name="artist_id" class="form-select form-select-lg" required>
-                            <option value="">-- Select Artist --</option>
-                            @foreach($artists as $a)
-                                <option value="{{ $a->user_id }}" 
-                                    {{ $order->artist_id === $a->user_id ? 'selected' : '' }}>
-                                    {{ $a->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('artist_id')
-                            <small class="text-danger d-block mt-2">{{ $message }}</small>
-                        @enderror
-                    </div>
-
                     <!-- Price -->
                     <div class="mb-4">
                         <label class="form-label fw-bold">Price (Rp)</label>

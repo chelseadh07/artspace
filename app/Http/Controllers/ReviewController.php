@@ -58,10 +58,12 @@ class ReviewController extends Controller
         }
 
         Review::create([
-            'order_id'  => $order->order_id,
-            'client_id' => Auth::id(),
-            'rating'    => $r->rating,
-            'comment'   => $r->comment,
+            'order_id'   => $order->order_id,
+            'service_id' => $order->service_id,
+            'client_id'  => Auth::id(),
+            'artist_id'  => $order->artist_id,
+            'rating'     => $r->rating,
+            'comment'    => $r->comment,
         ]);
 
         return redirect()

@@ -15,7 +15,7 @@
 
     <!-- Reviews Table -->
     <div class="table-responsive">
-        <table class="table">
+        <table class="table table-dark table-hover">
             <thead>
                 <tr>
                     <th>#</th>
@@ -33,7 +33,7 @@
                         <span class="badge bg-info">{{ $rv->id }}</span>
                     </td>
                     <td>
-                        <a href="{{ route('orders.show', $rv->order) }}" class="text-primary text-decoration-none">
+                        <a href="{{ route('orders.show', $rv->order) }}" class="text-info text-decoration-none">
                             #{{ $rv->order->order_id ?? '—' }}
                         </a>
                     </td>
@@ -53,7 +53,7 @@
                         </div>
                     </td>
                     <td>
-                        <small class="text-muted">{{ Str::limit($rv->comment, 60) }}</small>
+                        <small class="text-light">{{ Str::limit($rv->comment, 60) }}</small>
                     </td>
                     <td>
                         <div class="btn-group btn-group-sm" role="group">

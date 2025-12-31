@@ -12,8 +12,11 @@
             </h1>
             <p class="text-muted mb-0">Track and manage your orders</p>
         </div>
+
         @if(auth()->user()->role === 'client')
             <a href="{{ route('orders.create') }}" class="btn btn-primary">
+        @if(Auth::user()->role === 'client')
+            <a href="{{ route('services.index') }}" class="btn btn-primary">
                 <i class="fas fa-plus"></i> New Order
             </a>
         @endif
@@ -21,7 +24,7 @@
 
     <!-- Orders Table -->
     <div class="table-responsive">
-        <table class="table">
+        <table class="table table-dark table-hover">
             <thead>
                 <tr>
                     <th>#</th>
@@ -83,23 +86,47 @@
                                title="View order">
                                 <i class="fas fa-eye"></i>
                             </a>
+
                             @if(auth()->user()->role === 'client' && auth()->id() === $o->client_id)
+
+                            @if(auth()->user()->role === 'admin' || auth()->id() === $o->artist_id)
                                 <a href="{{ route('orders.edit', $o) }}" 
                                    class="btn btn-outline-secondary" 
                                    title="Edit order">
                                     <i class="fas fa-edit"></i>
                                 </a>
                             @endif
+
                             @if((auth()->user()->role === 'client' && auth()->id() === $o->client_id) || (auth()->user()->role === 'artist' && auth()->id() === $o->artist_id) || auth()->user()->role === 'admin')
                                 <form action="{{ route('orders.destroy', $o) }}" 
                                       method="POST" 
                                       style="display:inline"
                                       onclick="return confirm('Delete this order?')">
+                            @if(auth()->user()->role === 'admin')
+                                <form action="{{ route('orders.destroy', $o) }}" 
+                                      method="POST" 
+                                      style="display:inline"
+                                      onsubmit="return confirm('Delete this order?')">
                                     @csrf @method('DELETE')
                                     <button type="submit" 
                                             class="btn btn-outline-danger"
                                             title="Delete order">
                                         <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            @elseif(auth()->user()->role === 'client' && auth()->id() === $o->client_id && $o->status === 'pending')
+                                <form action="{{ route('orders.update', $o) }}" 
+                                      method="POST" 
+                                      style="display:inline"
+                                      onsubmit="return confirm('Cancel this order?')">
+                                    @csrf @method('PUT')
+                                    <input type="hidden" name="status" value="cancelled">
+                                    <input type="hidden" name="description_request" value="{{ $o->description_request }}">
+                                    <input type="hidden" name="price" value="{{ $o->price }}">
+                                    <button type="submit" 
+                                            class="btn btn-outline-warning"
+                                            title="Cancel order">
+                                        <i class="fas fa-times"></i>
                                     </button>
                                 </form>
                             @endif

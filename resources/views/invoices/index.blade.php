@@ -17,8 +17,8 @@
         </div>
     @else
         <div class="table-responsive">
-            <table class="table table-hover border-0 align-middle">
-                <thead class="table-dark">
+            <table class="table table-dark table-hover border-0 align-middle">
+                <thead>
                     <tr>
                         <th>Invoice #</th>
                         <th>{{ auth()->user()->role === 'client' ? 'Artist' : 'Client' }}</th>

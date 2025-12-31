@@ -83,7 +83,7 @@
                     <i class="fas fa-shopping-cart"></i> Order This Service
                 </a>
 
-                @if(auth()->check() && (auth()->user()->id === $service->artist_id || auth()->user()->role === 'admin'))
+                @if(auth()->check() && (auth()->id() === $service->user_id || auth()->user()->role === 'admin'))
                     <a href="{{ route('services.edit', $service) }}"
                        class="btn btn-outline-secondary btn-lg">
                         <i class="fas fa-edit"></i> Edit
@@ -104,10 +104,6 @@
             <!-- Additional Info -->
             <div class="mt-5 pt-4 border-top border-dark">
                 <div class="row">
-                    <div class="col-6">
-                        <p class="text-muted small">Service ID</p>
-                        <p class="fw-semibold">{{ $service->id }}</p>
-                    </div>
                     @if($service->created_at)
                         <div class="col-6">
                             <p class="text-muted small">Created</p>
@@ -120,69 +116,70 @@
 
     </div>
 
-    <!-- Artist Portfolio / Artwork Gallery -->
-    @if($service->artist && $service->artist->artworks()->count() > 0)
-        <div class="mt-5 pt-5 border-top border-dark">
-            <h3 class="fw-bold mb-4">
-                <i class="fas fa-palette"></i> Artist's Portfolio
-            </h3>
+    <!-- Reviews Section -->
+    @php
+        $reviews = $service->reviews()->with('client')->latest()->get();
+        $averageRating = $reviews->count() > 0 ? round($reviews->avg('rating'), 1) : 0;
+    @endphp
 
-            <div class="row g-4">
-                @foreach($service->artist->artworks()->limit(8)->get() as $artwork)
-                    <div class="col-md-3 col-sm-6">
-                        <div class="card card-hover h-100">
-                            <!-- Artwork Image -->
-                            <div style="position: relative; overflow: hidden; height: 220px;">
-                                @if($artwork->image_url)
-                                    <img src="{{ asset('storage/'.$artwork->image_url) }}"
-                                         class="w-100 h-100"
-                                         style="object-fit: cover; transition: transform 0.3s ease;">
-                                @else
-                                    <div class="bg-dark d-flex align-items-center justify-content-center w-100 h-100">
-                                        <div class="text-center">
-                                            <i class="fas fa-image fa-2x text-muted"></i>
+    <div class="mt-5 pt-5 border-top border-dark">
+        <h3 class="fw-bold mb-4">
+            <i class="fas fa-star text-warning"></i> Customer Reviews
+            @if($averageRating > 0)
+                <span class="text-muted" style="font-size: 0.7em;">
+                    (@for($i = 1; $i <= 5; $i++)
+                        <i class="fas fa-star {{ $i <= round($averageRating) ? 'text-warning' : 'text-muted' }}"></i>
+                    @endfor
+                    {{ $averageRating }}/5 - {{ $reviews->count() }} review{{ $reviews->count() !== 1 ? 's' : '' }})
+                </span>
+            @else
+                <span class="text-muted" style="font-size: 0.7em;">(No reviews yet)</span>
+            @endif
+        </h3>
+
+        @if($reviews->count() > 0)
+            <div class="row g-3">
+                @foreach($reviews as $review)
+                    <div class="col-md-6">
+                        <div class="card bg-dark border-secondary">
+                            <div class="card-body">
+                                <!-- Rating Stars -->
+                                <div class="mb-2">
+                                    @for($i = 1; $i <= 5; $i++)
+                                        <i class="fas fa-star {{ $i <= $review->rating ? 'text-warning' : 'text-muted' }}"></i>
+                                    @endfor
+                                    <span class="text-light ms-2">{{ $review->rating }}.0</span>
+                                </div>
+
+                                <!-- Comment -->
+                                @if($review->comment)
+                                    <p class="text-light mb-3">{{ $review->comment }}</p>
+                                @endif
+
+                                <!-- Client Info -->
+                                <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top border-secondary">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center"
+                                             style="width: 32px; height: 32px;">
+                                            <i class="fas fa-user text-white fa-sm"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-light mb-0 small fw-bold">{{ $review->client->name }}</p>
+                                            <p class="text-muted mb-0 small">{{ $review->created_at->diffForHumans() }}</p>
                                         </div>
                                     </div>
-                                @endif
-                            </div>
-
-                            <div class="card-body d-flex flex-column">
-                                <!-- Title -->
-                                <h6 class="card-title mb-2">{{ $artwork->title }}</h6>
-
-                                <!-- Category -->
-                                @if($artwork->category)
-                                    <span class="badge bg-success mb-2" style="width: fit-content;">
-                                        {{ $artwork->category->name }}
-                                    </span>
-                                @endif
-
-                                <!-- Description -->
-                                <p class="text-muted small flex-grow-1">
-                                    {{ Str::limit($artwork->description, 60) }}
-                                </p>
-
-                                <!-- View Button -->
-                                <a href="{{ route('artworks.show', $artwork) }}"
-                                   class="btn btn-primary btn-sm mt-2">
-                                    <i class="fas fa-eye"></i> View
-                                </a>
+                                </div>
                             </div>
                         </div>
                     </div>
                 @endforeach
             </div>
-
-            <!-- View Full Portfolio Link -->
-            @if($service->artist->artworks()->count() > 8)
-                <div class="text-center mt-4">
-                    <a href="{{ route('artists.show', $service->artist) }}" class="btn btn-outline-primary btn-lg">
-                        <i class="fas fa-images"></i> View Full Portfolio
-                    </a>
-                </div>
-            @endif
-        </div>
-    @endif
+        @else
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> No reviews yet. Be the first to review this service!
+            </div>
+        @endif
+    </div>
 
 </div>
 

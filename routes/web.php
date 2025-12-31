@@ -108,7 +108,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('categories', CategoryController::class);
     Route::resource('artworks', ArtworkController::class);
     Route::resource('services', ServiceController::class);
-    Route::resource('orders', OrderController::class);
+    Route::resource('orders', OrderController::class)->except(['create']);
+
+    // Custom route for order with service parameter
+    Route::get('orders/create/{service}', [OrderController::class, 'create'])->name('orders.create');
 
     // Artist-specific: update order status
     Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
@@ -119,7 +122,37 @@ Route::middleware('auth')->group(function () {
     Route::post('payments/{payment}/confirm', [PaymentController::class, 'confirm'])->name('payments.confirm');
 
     Route::resource('order_chat', OrderChatController::class)->only(['index', 'store', 'destroy']);
-    Route::resource('reviews', ReviewController::class)->only(['index', 'create', 'store', 'destroy']);
+    
+    // Custom routes for reviews
+    // Redirect legacy query-based access (e.g., /reviews/create?2=) to the proper route param form
+    Route::get('reviews/create', function (\Illuminate\Http\Request $request) {
+        $queryParams = $request->query();
+        $orderId = null;
+
+        // Handle odd URLs like /reviews/create?2=
+        foreach ($queryParams as $key => $value) {
+            if (is_numeric($key)) {
+                $orderId = (int) $key;
+                break;
+            }
+        }
+
+        // Also support explicit ?order= or ?id=
+        if (!$orderId) {
+            $orderId = $request->query('order') ?? $request->query('id');
+        }
+
+        if (!$orderId) {
+            abort(404);
+        }
+
+        return redirect()->route('reviews.create', ['order' => $orderId]);
+    })->name('reviews.create.redirect');
+
+    Route::get('reviews/create/{order}', [ReviewController::class, 'create'])->name('reviews.create');
+    Route::get('reviews/{review}/edit', [ReviewController::class, 'edit'])->name('reviews.edit');
+    Route::resource('reviews', ReviewController::class)->only(['index', 'store', 'update', 'destroy']);
+    
     Route::resource('reports', ReportController::class)->except(['edit', 'show']);
     Route::post('reports/{report}/status', [ReportController::class, 'updateStatus'])->name('reports.updateStatus');
 
@@ -137,6 +170,9 @@ Route::middleware('auth')->group(function () {
     Route::get('profile', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
     Route::delete('profile', [\App\Http\Controllers\ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Password Update
+    Route::put('password', [\App\Http\Controllers\Auth\PasswordController::class, 'update'])->name('password.update');
 
     // Logout
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

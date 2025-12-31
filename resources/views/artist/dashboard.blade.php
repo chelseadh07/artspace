@@ -9,7 +9,7 @@
         <h1 class="fw-bold mb-1">
             <i class="fas fa-palette"></i> Artist Dashboard
         </h1>
-        <p class="text-muted">Welcome back, {{ auth()->user()->name }}! 🎨</p>
+        <p class="text-muted">Welcome back, {{ auth()->user()->name }}!</p>
     </div>
 
     <!-- Quick Stats -->
@@ -79,7 +79,7 @@
                     </div>
                     <h5 class="card-title">My Artworks</h5>
                     <p class="text-muted small">Manage your portfolio and showcase your creations</p>
-                    <a href="{{ route('artworks.index') }}" class="btn btn-primary btn-sm">
+                    <a href="{{ route('artworks.index', ['my' => '1']) }}" class="btn btn-primary btn-sm">
                         <i class="fas fa-arrow-right"></i> Manage Artworks
                     </a>
                 </div>

@@ -15,33 +15,18 @@
                 <i class="fas fa-calendar"></i> {{ $order->created_at->format('d M Y H:i') }}
             </small>
         </div>
-
-        @if (auth()->id() === $order->client_id)
+        @if(auth()->id() === $order->client_id || auth()->user()->role === 'admin')
             <div class="d-flex gap-2">
                 <a href="{{ route('orders.edit', $order) }}" class="btn btn-outline-secondary">
                     <i class="fas fa-edit"></i> Edit
                 </a>
-                <form action="{{ route('orders.destroy', $order) }}" method="POST">
+                <form action="{{ route('orders.destroy', $order) }}" method="POST" style="display:inline">
                     @csrf @method('DELETE')
                     <button class="btn btn-outline-danger" onclick="return confirm('Delete order?')">
                         <i class="fas fa-trash"></i> Delete
                     </button>
                 </form>
             </div>
-        @elseif(auth()->user()->role === 'artist' && auth()->id() === $order->artist_id)
-            <form action="{{ route('orders.destroy', $order) }}" method="POST">
-                @csrf @method('DELETE')
-                <button class="btn btn-outline-danger" onclick="return confirm('Delete order?')">
-                    <i class="fas fa-trash"></i> Delete
-                </button>
-            </form>
-        @elseif(auth()->user()->role === 'admin')
-            <form action="{{ route('orders.destroy', $order) }}" method="POST">
-                @csrf @method('DELETE')
-                <button class="btn btn-outline-danger" onclick="return confirm('Delete order?')">
-                    <i class="fas fa-trash"></i> Delete
-                </button>
-            </form>
         @endif
     </div>
 
@@ -191,6 +176,70 @@
             </div>
         </div>
         @endif
+
+        <!-- Review Card -->
+        <div class="col-lg-6">
+            <div class="card card-hover">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-star text-warning"></i> Review
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if($order->review)
+                        <!-- Review Exists -->
+                        <div class="mb-3">
+                            <p class="text-muted small mb-1">Rating</p>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="d-flex gap-1">
+                                    @for($i = 1; $i <= 5; $i++)
+                                        <i class="fas fa-star" style="font-size: 1.2rem; color: {{ $i <= $order->review->rating ? '#fbbf24' : '#9ca3af' }};"></i>
+                                    @endfor
+                                </div>
+                                <span class="text-warning fw-600">{{ $order->review->rating }}/5</span>
+                            </div>
+                        </div>
+
+                        @if($order->review->comment)
+                            <div class="mb-3">
+                                <p class="text-muted small mb-1">Comment</p>
+                                <p class="text-light">{{ $order->review->comment }}</p>
+                            </div>
+                        @endif
+
+                        <div class="text-muted small">
+                            <i class="fas fa-calendar"></i> {{ $order->review->created_at->format('d M Y H:i') }}
+                        </div>
+
+                        @if(auth()->id() === $order->client_id)
+                            <hr class="border-dark my-3">
+                            <a href="{{ route('reviews.edit', $order->review) }}" class="btn btn-outline-primary btn-sm w-100">
+                                <i class="fas fa-edit"></i> Edit Review
+                            </a>
+                        @endif
+                    @else
+                        <!-- No Review Yet -->
+                        @if(auth()->id() === $order->client_id && $order->invoice)
+                            <p class="text-muted mb-3">
+                                <i class="fas fa-info-circle"></i> Share your experience with the artist
+                            </p>
+                            <a href="{{ route('reviews.create', $order) }}" class="btn btn-warning w-100">
+                                <i class="fas fa-star"></i> Write a Review
+                            </a>
+                        @else
+                            <p class="text-muted">
+                                <i class="fas fa-hourglass-end"></i> 
+                                @if(auth()->id() === $order->client_id)
+                                    Invoice must be created before you can write a review
+                                @else
+                                    Waiting for client to write a review
+                                @endif
+                            </p>
+                        @endif
+                    @endif
+                </div>
+            </div>
+        </div>
 
     </div>
 </div>

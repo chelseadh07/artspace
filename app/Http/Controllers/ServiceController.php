@@ -13,7 +13,7 @@ class ServiceController extends Controller
     {
         $q = $r->q;
 
-        $services = Service::with(['artist','category'])
+        $services = Service::with(['artist', 'categories'])
             ->orderBy('created_at','desc');
 
         if ($q) {
@@ -30,35 +30,67 @@ class ServiceController extends Controller
 
     public function create()
     {
-        $categories = Category::all();
-        return view('services.create', compact('categories'));
+        // Cek apakah artist sudah mengisi nomor WhatsApp
+        if (Auth::user()->role === 'artist' && empty(Auth::user()->whatsapp_link)) {
+            return redirect()->route('services.index')
+                ->with('error', 'You must add your WhatsApp number in your profile before creating a service. Please complete your profile.');
+        }
+
+        return view('services.create');
     }
 
     public function store(Request $r)
     {
+        // Cek apakah artist sudah mengisi nomor WhatsApp
+        if (Auth::user()->role === 'artist' && empty(Auth::user()->whatsapp_link)) {
+            return redirect()->route('services.index')
+                ->with('error', 'You must add your WhatsApp number in your profile before creating a service. Please complete your profile.');
+        }
+
         $r->validate([
             'title'=>'required|string|max:255',
             'description'=>'nullable|string',
             'base_price'=>'required|numeric|min:0',
             'expected_duration'=>'nullable|string|max:255',
-            'category_id'=>'nullable|exists:categories,category_id',
+            'categories'=>'nullable|json',
         ]);
 
-        Service::create([
+        // Buat service terlebih dahulu
+        $service = Service::create([
             'user_id'=>Auth::id(),
-            'category_id'=>$r->category_id,
             'title'=>$r->title,
             'description'=>$r->description,
             'base_price'=>$r->base_price,
             'expected_duration'=>$r->expected_duration,
-            'status'=>$r->status ?? 'active',
+            'status'=>'active',
         ]);
+
+        // Handle multiple categories dengan harga berbeda
+        if ($r->categories) {
+            $categoriesData = json_decode($r->categories, true);
+            
+            if (is_array($categoriesData)) {
+                foreach ($categoriesData as $catData) {
+                    // Cek atau buat kategori
+                    $category = Category::where('name', $catData['name'])->first();
+                    if (!$category) {
+                        $category = Category::create(['name' => $catData['name']]);
+                    }
+                    
+                    // Attach category dengan harga ke service
+                    $service->categories()->attach($category->category_id, [
+                        'price' => $catData['price']
+                    ]);
+                }
+            }
+        }
 
         return redirect()->route('services.index')->with('success','Service created.');
     }
 
     public function show(Service $service)
     {
+        $service->load('categories');
         return view('services.show', compact('service'));
     }
 
@@ -68,8 +100,8 @@ class ServiceController extends Controller
             abort(403);
         }
 
-        $categories = Category::all();
-        return view('services.edit', compact('service','categories'));
+        $service->load('categories');
+        return view('services.edit', compact('service'));
     }
 
     public function update(Request $r, Service $service)
@@ -83,18 +115,38 @@ class ServiceController extends Controller
             'description'=>'nullable|string',
             'base_price'=>'required|numeric|min:0',
             'expected_duration'=>'nullable|string|max:255',
-            'category_id'=>'nullable|exists:categories,category_id',
+            'categories'=>'nullable|json',
             'status'=>'required|in:active,inactive',
         ]);
 
         $service->update([
-            'category_id'=>$r->category_id,
             'title'=>$r->title,
             'description'=>$r->description,
             'base_price'=>$r->base_price,
             'expected_duration'=>$r->expected_duration,
             'status'=>$r->status,
         ]);
+
+        // Update categories jika ada
+        if ($r->categories) {
+            // Hapus kategori lama
+            $service->categories()->detach();
+            
+            $categoriesData = json_decode($r->categories, true);
+            
+            if (is_array($categoriesData)) {
+                foreach ($categoriesData as $catData) {
+                    $category = Category::where('name', $catData['name'])->first();
+                    if (!$category) {
+                        $category = Category::create(['name' => $catData['name']]);
+                    }
+                    
+                    $service->categories()->attach($category->category_id, [
+                        'price' => $catData['price']
+                    ]);
+                }
+            }
+        }
 
         return redirect()->route('services.index')->with('success','Service updated.');
     }

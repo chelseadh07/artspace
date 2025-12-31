@@ -58,16 +58,23 @@
                         </div>
                     </div>
 
-                    <!-- Category -->
+                    <!-- Categories with Multiple Pricing -->
                     <div class="mb-4">
-                        <label class="form-label fw-bold">Category</label>
-                        <select name="category_id" class="form-select form-select-lg">
-                            <option value="">-- Select a Category --</option>
-                            @foreach($categories as $c)
-                                <option value="{{ $c->category_id }}">{{ $c->name }}</option>
-                            @endforeach
-                        </select>
-                        @error('category_id')
+                        <label class="form-label fw-bold">Categories (Optional - Add Multiple)</label>
+                        <div class="mb-3">
+                            <div class="d-flex gap-2 mb-2">
+                                <input type="text" id="new_category" class="form-control form-control-lg" placeholder="Enter category name">
+                                <input type="number" id="category_price" class="form-control form-control-lg" placeholder="Price (Rp)" min="0" step="0.01">
+                                <button type="button" class="btn btn-outline-primary" id="add_category_btn">
+                                    <i class="fas fa-plus"></i> Add
+                                </button>
+                            </div>
+                        </div>
+                        <div id="categories_list" class="mt-3">
+                            <!-- Kategori yang ditambahkan akan tampil di sini -->
+                        </div>
+                        <input type="hidden" id="categories_json" name="categories">
+                        @error('categories')
                             <small class="text-danger d-block mt-2">{{ $message }}</small>
                         @enderror
                     </div>
@@ -92,4 +99,79 @@
     </div>
 
 </div>
+
+<script>
+let categories = [];
+
+document.getElementById('add_category_btn').addEventListener('click', function() {
+    const categoryInput = document.getElementById('new_category');
+    const priceInput = document.getElementById('category_price');
+    const categoryName = categoryInput.value.trim();
+    const price = priceInput.value.trim();
+    
+    if (!categoryName) {
+        alert('Please enter a category name');
+        return;
+    }
+    
+    if (!price) {
+        alert('Please enter a price');
+        return;
+    }
+    
+    // Tambah ke array
+    categories.push({
+        name: categoryName,
+        price: parseFloat(price)
+    });
+    
+    // Update hidden input dengan JSON
+    document.getElementById('categories_json').value = JSON.stringify(categories);
+    
+    // Render ulang list
+    renderCategories();
+    
+    // Clear inputs
+    categoryInput.value = '';
+    priceInput.value = '';
+    categoryInput.focus();
+});
+
+function renderCategories() {
+    const container = document.getElementById('categories_list');
+    
+    if (categories.length === 0) {
+        container.innerHTML = '';
+        return;
+    }
+    
+    container.innerHTML = categories.map((cat, index) => `
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            <strong>${cat.name}</strong> - Rp ${new Intl.NumberFormat('id-ID').format(cat.price)}
+            <button type="button" class="btn-close" onclick="removeCategory(${index})"></button>
+        </div>
+    `).join('');
+}
+
+function removeCategory(index) {
+    categories.splice(index, 1);
+    document.getElementById('categories_json').value = JSON.stringify(categories);
+    renderCategories();
+}
+
+// Allow Enter key to add category
+document.getElementById('new_category').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('add_category_btn').click();
+    }
+});
+
+document.getElementById('category_price').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('add_category_btn').click();
+    }
+});
+</script>
 @endsection

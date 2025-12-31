@@ -9,46 +9,19 @@
         <div class="col-md-6">
             <h3 class="mb-4">Order Summary</h3>
 
-            @if($service)
-                <!-- Specific Service Checkout -->
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ $service->title }}</h5>
-                        <p class="text-muted">{{ $service->category->name ?? 'N/A' }}</p>
-                        <p>{{ $service->description }}</p>
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <span class="h4 mb-0">Rp {{ number_format($service->base_price, 0, ',', '.') }}</span>
-                            <span class="badge bg-success">Active</span>
-                        </div>
-                        <hr>
-                        <p><strong>Service by:</strong> {{ $service->artist->name ?? '—' }}</p>
+            <!-- Service Details -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">{{ $service->title }}</h5>
+                    <p>{{ $service->description }}</p>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="h4 mb-0" id="selectedPrice">Rp {{ number_format($service->base_price, 0, ',', '.') }}</span>
+                        <span class="badge bg-success">Active</span>
                     </div>
+                    <hr>
+                    <p><strong>Service by:</strong> {{ $service->artist->name ?? '—' }}</p>
                 </div>
-            @else
-                <!-- Browse & Select Service -->
-                <div class="mb-4">
-                    <label for="service_id" class="form-label"><strong>Choose Service</strong></label>
-                    <select id="service_id" name="service_id" class="form-select form-select-lg" onchange="updateServiceInfo(this.value)">
-                        <option value="">— Select a service —</option>
-                        @foreach($services as $s)
-                            <option value="{{ $s->service_id }}" data-price="{{ $s->base_price }}" data-title="{{ $s->title }}" data-artist="{{ $s->artist->name ?? 'N/A' }}" data-description="{{ $s->description }}">
-                                {{ $s->title }} — Rp {{ number_format($s->base_price, 0, ',', '.') }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div id="service_info" class="card mb-4" style="display: none;">
-                    <div class="card-body">
-                        <h5 id="info_title" class="card-title">—</h5>
-                        <p id="info_description" class="text-muted">—</p>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span id="info_price" class="h4 mb-0">—</span>
-                            <span id="info_artist" class="text-muted">—</span>
-                        </div>
-                    </div>
-                </div>
-            @endif
+            </div>
 
             <!-- Order Notes -->
             <div class="mb-4">
@@ -62,23 +35,43 @@
         <div class="col-md-6">
             <h3 class="mb-4">Checkout</h3>
 
-            <form action="{{ route('orders.store') }}" method="POST" id="checkout_form">
+            <form action="{{ route('orders.store') }}" method="POST">
                 @csrf
 
-                <input type="hidden" id="hidden_service_id" name="service_id" value="{{ $service?->service_id ?? '' }}">
-                <input type="hidden" id="artist_id" name="artist_id" value="{{ $service?->artist_id ?? '' }}">
+                <input type="hidden" name="service_id" value="{{ $service->service_id }}">
+
+                <!-- Category Selection (if multiple categories) -->
+                @if($service->categories && $service->categories->count() > 0)
+                    <div class="mb-3">
+                        <label for="category_id" class="form-label"><strong>Select Category</strong></label>
+                        <select id="category_id" name="category_id" class="form-select bg-dark text-light border-secondary" required>
+                            <option value="">-- Choose a category --</option>
+                            @foreach($service->categories as $category)
+                                <option value="{{ $category->category_id }}" data-price="{{ $category->pivot->price }}">
+                                    {{ $category->name }} - Rp {{ number_format($category->pivot->price, 0, ',', '.') }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('category_id')
+                            <small class="text-danger">{{ $message }}</small>
+                        @enderror
+                    </div>
+                @else
+                    <!-- Fallback: use base price if no categories -->
+                    <input type="hidden" name="category_id" value="">
+                @endif
 
                 <!-- Price Summary -->
-                <div class="card bg-light mb-4">
+                <div class="card bg-dark border-secondary mb-4">
                     <div class="card-body">
                         <div class="d-flex justify-content-between mb-2">
                             <span>Service Price:</span>
-                            <span id="summary_price">Rp 0</span>
+                            <span id="totalPrice">Rp {{ number_format($service->base_price, 0, ',', '.') }}</span>
                         </div>
-                        <hr class="my-2">
+                        <hr class="my-2 border-secondary">
                         <div class="d-flex justify-content-between">
                             <strong>Total:</strong>
-                            <strong id="summary_total" class="h5 mb-0">Rp 0</strong>
+                            <strong class="h5 mb-0 text-primary" id="finalTotal">Rp {{ number_format($service->base_price, 0, ',', '.') }}</strong>
                         </div>
                     </div>
                 </div>
@@ -97,10 +90,10 @@
                 <!-- Action Buttons -->
                 <div class="d-grid gap-2">
                     <button type="submit" class="btn btn-primary btn-lg">
-                        <i class="bi bi-cart-check"></i> Proceed to Checkout
+                        <i class="fas fa-shopping-cart"></i> Place Order
                     </button>
-                    <a href="{{ route('services.index') }}" class="btn btn-outline-secondary">
-                        Continue Shopping
+                    <a href="{{ route('services.show', $service) }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Service
                     </a>
                 </div>
             </form>
@@ -108,76 +101,32 @@
     </div>
 </div>
 
-<script>
-function updateServiceInfo(serviceId) {
-    const select = document.getElementById('service_id');
-    const option = select.options[select.selectedIndex];
-    const infoDiv = document.getElementById('service_info');
-    const hiddenInput = document.getElementById('hidden_service_id');
-    const summaryPrice = document.getElementById('summary_price');
-    const summaryTotal = document.getElementById('summary_total');
-    const artistInput = document.getElementById('artist_id');
-
-    if (serviceId) {
-        document.getElementById('info_title').textContent = option.dataset.title;
-        document.getElementById('info_description').textContent = option.dataset.description;
-        document.getElementById('info_price').textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(option.dataset.price);
-        document.getElementById('info_artist').textContent = 'by ' + option.dataset.artist;
-
-        const price = parseInt(option.dataset.price);
-        summaryPrice.textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(price);
-        summaryTotal.textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(price);
-
-        hiddenInput.value = serviceId;
-        infoDiv.style.display = 'block';
-    } else {
-        infoDiv.style.display = 'none';
-        hiddenInput.value = '';
-        summaryPrice.textContent = 'Rp 0';
-        summaryTotal.textContent = 'Rp 0';
-    }
-}
-
-// Initialize if service is pre-selected
-document.addEventListener('DOMContentLoaded', function() {
-    const select = document.getElementById('service_id');
-    if (select && select.value) {
-        updateServiceInfo(select.value);
-    }
-});
-
-// Form validation
-document.getElementById('checkout_form').addEventListener('submit', function(e) {
-    const serviceId = document.getElementById('hidden_service_id').value;
-
-    if (!serviceId) {
-        e.preventDefault();
-        alert('Please select a service');
-        return false;
-    }
-});
-</script>
-
 <style>
     .card {
         border: 1px solid #27272a;
     }
 
-    .form-select, .form-control {
+    .form-control {
         background-color: #18181b;
         border-color: #27272a;
         color: #e5e7eb;
     }
 
-    .form-select option {
-        background-color: #18181b;
-        color: #e5e7eb;
-    }
-
-    .form-select:focus, .form-control:focus {
+    .form-control:focus {
         background-color: #18181b;
         border-color: #6366f1;
         color: #e5e7eb;
+        box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
+    }
+
+    .form-select {
+        background-color: #18181b;
+        border-color: #27272a;
+        color: #e5e7eb;
+    }
+
+    .form-select:focus {
+        border-color: #6366f1;
         box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
     }
 
@@ -189,9 +138,27 @@ document.getElementById('checkout_form').addEventListener('submit', function(e) 
     .btn-primary:hover {
         background-color: #4f46e5;
     }
-
-    .bg-light {
-        background-color: #27272a !important;
-    }
 </style>
+
+<script>
+    const basePrice = {{ $service->base_price }};
+    const categorySelect = document.getElementById('category_id');
+    const totalPrice = document.getElementById('totalPrice');
+    const finalTotal = document.getElementById('finalTotal');
+
+    function formatCurrency(value) {
+        return 'Rp ' + value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+
+    if (categorySelect) {
+        categorySelect.addEventListener('change', function() {
+            if (this.value) {
+                const selectedOption = this.options[this.selectedIndex];
+                const price = parseInt(selectedOption.getAttribute('data-price'));
+                totalPrice.textContent = formatCurrency(price);
+                finalTotal.textContent = formatCurrency(price);
+            }
+        });
+    }
+</script>
 @endsection
