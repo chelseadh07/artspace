@@ -1,2 +1,2 @@
 [build]
-nixPackages = ["postgresql"]
+providers = ["php"]
