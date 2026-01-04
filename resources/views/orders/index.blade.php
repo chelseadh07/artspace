@@ -13,8 +13,6 @@
             <p class="text-muted mb-0">Track and manage your orders</p>
         </div>
 
-        @if(auth()->user()->role === 'client')
-            <a href="{{ route('orders.create') }}" class="btn btn-primary">
         @if(Auth::user()->role === 'client')
             <a href="{{ route('services.index') }}" class="btn btn-primary">
                 <i class="fas fa-plus"></i> New Order
@@ -88,8 +86,12 @@
                             </a>
 
                             @if(auth()->user()->role === 'client' && auth()->id() === $o->client_id)
-
-                            @if(auth()->user()->role === 'admin' || auth()->id() === $o->artist_id)
+                                <a href="{{ route('orders.edit', $o) }}" 
+                                   class="btn btn-outline-secondary" 
+                                   title="Edit order">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            @elseif(auth()->user()->role === 'admin' || auth()->id() === $o->artist_id)
                                 <a href="{{ route('orders.edit', $o) }}" 
                                    class="btn btn-outline-secondary" 
                                    title="Edit order">
@@ -97,11 +99,6 @@
                                 </a>
                             @endif
 
-                            @if((auth()->user()->role === 'client' && auth()->id() === $o->client_id) || (auth()->user()->role === 'artist' && auth()->id() === $o->artist_id) || auth()->user()->role === 'admin')
-                                <form action="{{ route('orders.destroy', $o) }}" 
-                                      method="POST" 
-                                      style="display:inline"
-                                      onclick="return confirm('Delete this order?')">
                             @if(auth()->user()->role === 'admin')
                                 <form action="{{ route('orders.destroy', $o) }}" 
                                       method="POST" 
