@@ -160,4 +160,19 @@ class OrderController extends Controller
             ->route('orders.show', $order)
             ->with('success', 'Order status updated.');
     }
+
+    public function waLink(Order $order)
+    {
+        // Redirect to artist's WhatsApp link with pre-filled message
+        if (!$order->artist->whatsapp_link) {
+            return redirect()
+                ->route('orders.show', $order)
+                ->with('error', 'Artist WhatsApp link not available.');
+        }
+
+        $message = "Halo! Saya ingin membayar untuk order #{$order->order_id}. Service: {$order->service->title}. Total: Rp " . number_format($order->price);
+        $waLink = $order->artist->whatsapp_link . "?text=" . urlencode($message);
+
+        return redirect()->away($waLink);
+    }
 }

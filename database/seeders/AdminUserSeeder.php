@@ -28,7 +28,8 @@ class AdminUserSeeder extends Seeder
                 'name' => 'John Artist',
                 'password' => Hash::make('artist123'),
                 'role' => 'artist',
-                'bio' => 'Professional digital artist specializing in portraits and illustrations'
+                'bio' => 'Professional digital artist specializing in portraits and illustrations',
+                'whatsapp_link' => 'https://wa.me/6281234567890'
             ]
         );
 

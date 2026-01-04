@@ -121,8 +121,8 @@
                         <div class="alert alert-info">No payment submitted yet</div>
 
                         @if(auth()->id() === $order->client_id)
-                            <a href="{{ route('payments.create', $order) }}" class="btn btn-success w-100">
-                                <i class="fas fa-credit-card"></i> Proceed to Payment
+                            <a href="{{ route('orders.wa', $order) }}" class="btn btn-success w-100">
+                                <i class="fab fa-whatsapp"></i> Proceed to Payment (WhatsApp)
                             </a>
                         @else
                             <p class="text-muted">Waiting for client payment</p>

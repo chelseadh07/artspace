@@ -118,7 +118,11 @@ Route::middleware('auth')->group(function () {
 
     Route::get('orders/{order}/wa', [OrderController::class, 'waLink'])->name('orders.wa');
 
-    Route::resource('payments', PaymentController::class)->except(['edit', 'update']);
+    // Payment routes - store dan confirm saja, create dipindah ke WhatsApp direct
+    Route::post('payments', [PaymentController::class, 'store'])->name('payments.store');
+    Route::get('payments', [PaymentController::class, 'index'])->name('payments.index');
+    Route::get('payments/{payment}', [PaymentController::class, 'show'])->name('payments.show');
+    Route::delete('payments/{payment}', [PaymentController::class, 'destroy'])->name('payments.destroy');
     Route::post('payments/{payment}/confirm', [PaymentController::class, 'confirm'])->name('payments.confirm');
 
     Route::resource('order_chat', OrderChatController::class)->only(['index', 'store', 'destroy']);
