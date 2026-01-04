@@ -85,13 +85,7 @@
                                 <i class="fas fa-eye"></i>
                             </a>
 
-                            @if(auth()->user()->role === 'client' && auth()->id() === $o->client_id)
-                                <a href="{{ route('orders.edit', $o) }}" 
-                                   class="btn btn-outline-secondary" 
-                                   title="Edit order">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                            @elseif(auth()->user()->role === 'admin' || auth()->id() === $o->artist_id)
+                            @if(auth()->user()->role === 'admin' || auth()->id() === $o->artist_id)
                                 <a href="{{ route('orders.edit', $o) }}" 
                                    class="btn btn-outline-secondary" 
                                    title="Edit order">

@@ -15,7 +15,7 @@
                 <i class="fas fa-calendar"></i> {{ $order->created_at->format('d M Y H:i') }}
             </small>
         </div>
-        @if(auth()->id() === $order->client_id || auth()->user()->role === 'admin')
+        @if(auth()->user()->role === 'admin' || auth()->id() === $order->artist_id)
             <div class="d-flex gap-2">
                 <a href="{{ route('orders.edit', $order) }}" class="btn btn-outline-secondary">
                     <i class="fas fa-edit"></i> Edit
@@ -171,6 +171,21 @@
                     <a href="{{ route('invoices.show', $order->invoice->invoice_id) }}"
                        class="btn btn-outline-primary w-100">
                         View Invoice
+                    </a>
+                </div>
+            </div>
+        </div>
+        @elseif($order->status === 'finished' && auth()->id() === $order->artist_id)
+        <div class="col-lg-6">
+            <div class="card card-hover">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-file-invoice-dollar"></i> Invoice</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Order finished. Create invoice to finalize payment.</p>
+                    <a href="{{ route('invoices.create', $order) }}"
+                       class="btn btn-success w-100">
+                        <i class="fas fa-plus"></i> Create Invoice
                     </a>
                 </div>
             </div>
