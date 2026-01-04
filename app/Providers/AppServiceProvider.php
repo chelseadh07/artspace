@@ -27,9 +27,10 @@ class AppServiceProvider extends ServiceProvider
         // Auto-run migration in production
         if (config('app.env') === 'production') {
             try {
-                // Check if migrations table exists, if not run migrations
-                if (! \Illuminate\Support\Facades\Schema::hasTable('migrations')) {
-                    \Illuminate\Support\Facades\Artisan::call('migrate:fresh', ['--seed' => true, '--force' => true]);
+                // Check if critical tables exist, if not run migrations
+                if (! \Illuminate\Support\Facades\Schema::hasTable('migrations') || 
+                    ! \Illuminate\Support\Facades\Schema::hasTable('sessions')) {
+                    \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
                 }
             } catch (\Exception $e) {
                 // Silent fail - don't break app if migration fails
