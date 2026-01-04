@@ -14,6 +14,12 @@ COPY . .
 
 RUN composer install --no-dev --optimize-autoloader
 
-CMD php artisan migrate --force && \
-    php artisan storage:link && \
-    php artisan serve --host=0.0.0.0 --port=$PORT
+# Laravel setup (AMAN DI BUILD TIME)
+RUN php artisan key:generate --force || true
+RUN php artisan migrate --force || true
+RUN php artisan storage:link || true
+
+EXPOSE 8080
+
+# ⬇️ PENTING: CMD HANYA SATU PROSES
+CMD php artisan serve --host=0.0.0.0 --port=$PORT
