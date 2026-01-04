@@ -24,6 +24,18 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Auto-run migration in production
+        if (config('app.env') === 'production') {
+            try {
+                // Check if migrations table exists, if not run migrations
+                if (! \Illuminate\Support\Facades\Schema::hasTable('migrations')) {
+                    \Illuminate\Support\Facades\Artisan::call('migrate:fresh', ['--seed' => true, '--force' => true]);
+                }
+            } catch (\Exception $e) {
+                // Silent fail - don't break app if migration fails
+            }
+        }
+
         // Register middleware aliases for role-based routes
         $router = $this->app->make(Router::class);
         $router->aliasMiddleware('buyer', BuyerOnly::class);
