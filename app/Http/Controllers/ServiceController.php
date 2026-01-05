@@ -143,14 +143,21 @@ class ServiceController extends Controller
             $thumbnail = $path;
         }
 
-        $service->update([
+        // Build update data - only include thumbnail if changed
+        $updateData = [
             'title'=>$r->title,
             'description'=>$r->description,
             'base_price'=>$r->base_price,
             'expected_duration'=>$r->expected_duration,
-            'thumbnail'=>$thumbnail,
             'status'=>$r->status,
-        ]);
+        ];
+        
+        // Only add thumbnail to update if we have image file or if column exists
+        if ($r->hasFile('image')) {
+            $updateData['thumbnail'] = $thumbnail;
+        }
+
+        $service->update($updateData);
 
         // Update categories jika ada
         if ($r->categories) {
