@@ -6,6 +6,7 @@ use App\Models\Service;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class ServiceController extends Controller
 {
@@ -52,8 +53,16 @@ class ServiceController extends Controller
             'description'=>'nullable|string',
             'base_price'=>'required|numeric|min:0',
             'expected_duration'=>'nullable|string|max:255',
+            'image'=>'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'categories'=>'nullable|json',
         ]);
+
+        // Handle image upload
+        $thumbnail = null;
+        if ($r->hasFile('image')) {
+            $path = $r->file('image')->store('services', 'public');
+            $thumbnail = $path;
+        }
 
         // Buat service terlebih dahulu
         $service = Service::create([
@@ -62,6 +71,7 @@ class ServiceController extends Controller
             'description'=>$r->description,
             'base_price'=>$r->base_price,
             'expected_duration'=>$r->expected_duration,
+            'thumbnail'=>$thumbnail,
             'status'=>'active',
         ]);
 
@@ -101,7 +111,8 @@ class ServiceController extends Controller
         }
 
         $service->load('categories');
-        return view('services.edit', compact('service'));
+        $categories = Category::all();
+        return view('services.edit', compact('service', 'categories'));
     }
 
     public function update(Request $r, Service $service)
@@ -115,15 +126,29 @@ class ServiceController extends Controller
             'description'=>'nullable|string',
             'base_price'=>'required|numeric|min:0',
             'expected_duration'=>'nullable|string|max:255',
+            'image'=>'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'categories'=>'nullable|json',
             'status'=>'required|in:active,inactive',
         ]);
+
+        // Handle image upload
+        $thumbnail = $service->thumbnail;
+        if ($r->hasFile('image')) {
+            // Delete old image if exists
+            if ($service->thumbnail) {
+                Storage::disk('public')->delete($service->thumbnail);
+            }
+            
+            $path = $r->file('image')->store('services', 'public');
+            $thumbnail = $path;
+        }
 
         $service->update([
             'title'=>$r->title,
             'description'=>$r->description,
             'base_price'=>$r->base_price,
             'expected_duration'=>$r->expected_duration,
+            'thumbnail'=>$thumbnail,
             'status'=>$r->status,
         ]);
 

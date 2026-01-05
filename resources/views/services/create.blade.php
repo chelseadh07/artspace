@@ -79,6 +79,16 @@
                         @enderror
                     </div>
 
+                    <!-- Service Image -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Service Image</label>
+                        <input type="file" name="image" class="form-control form-control-lg" accept="image/*">
+                        <small class="text-muted d-block mt-2">Accepted formats: JPEG, PNG, JPG, GIF (Max 2MB)</small>
+                        @error('image')
+                            <small class="text-danger d-block mt-2">{{ $message }}</small>
+                        @enderror
+                    </div>
+
                     <!-- Divider -->
                     <hr class="border-dark my-4">
 

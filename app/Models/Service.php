@@ -19,6 +19,7 @@ class Service extends Model
         'base_price',
         'expected_duration',
         'status',
+        'thumbnail',
     ];
 
     public function artist()
