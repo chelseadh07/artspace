@@ -27,7 +27,7 @@
                     <!-- Artwork Image -->
                     <div style="position: relative; overflow: hidden; height: 220px;">
                         @if($art->image_url)
-                            <img src="{{ $art->image_url }}"
+                            <img src="{{ asset('storage/' . $art->image_url) }}"
                                  class="w-100 h-100"
                                  style="object-fit: cover; transition: transform 0.3s ease;">
                         @else

@@ -22,7 +22,7 @@
         <div class="col-lg-6">
             <div class="card card-hover" style="border: none;">
                 @if($artwork->image_url)
-                    <img src="{{ $artwork->image_url }}" 
+                    <img src="{{ asset('storage/' . $artwork->image_url) }}" 
                          class="rounded"
                          style="width: 100%; height: 500px; object-fit: cover;">
                 @else

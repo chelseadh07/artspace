@@ -64,7 +64,7 @@
                     @if($artwork->image_url)
                         <div class="mb-4">
                             <label class="form-label fw-bold">Current Image</label>
-                            <img src="{{ $artwork->image_url }}" 
+                            <img src="{{ asset('storage/' . $artwork->image_url) }}" 
                                  style="width: 100%; max-height: 250px; object-fit: contain; border-radius: 8px;">
                         </div>
                     @endif

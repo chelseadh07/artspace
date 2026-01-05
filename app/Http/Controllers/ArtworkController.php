@@ -51,13 +51,12 @@ class ArtworkController extends Controller
         ]);
 
         $path = $r->file('image')->store('artworks', 'public');
-        $imageUrl = Storage::url($path);
 
         Artwork::create([
             'user_id' => Auth::id(),
             'title' => $r->title,
             'description' => $r->description,
-            'image_url' => $imageUrl,
+            'image_url' => $path,
             'category_id' => $r->category_id,
         ]);
 
@@ -94,12 +93,11 @@ class ArtworkController extends Controller
 
         if ($r->hasFile('image')) {
             if ($artwork->image_url) {
-                // Delete old image - extract path from URL
-                $oldPath = str_replace('/storage/', 'public/', $artwork->image_url);
-                Storage::delete($oldPath);
+                // Delete old image
+                Storage::disk('public')->delete($artwork->image_url);
             }
             $path = $r->file('image')->store('artworks', 'public');
-            $artwork->image_url = Storage::url($path);
+            $artwork->image_url = $path;
         }
 
         $artwork->title = $r->title;
@@ -117,9 +115,7 @@ class ArtworkController extends Controller
         }
 
         if ($artwork->image_url) {
-            // Extract path from URL
-            $path = str_replace('/storage/', 'public/', $artwork->image_url);
-            Storage::delete($path);
+            Storage::disk('public')->delete($artwork->image_url);
         }
 
         $artwork->delete();
